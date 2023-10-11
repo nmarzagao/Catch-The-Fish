@@ -1,5 +1,13 @@
 #include <stdlib.h>
-#include "raylib.h"
+#include "include/raylib.h"
+
+/* 
+TODO: 
+    Organize Code
+    Fix bugs
+    Implament a scoreboard
+    Fixup github
+*/
 
 int game_menu();
 int game_start();
