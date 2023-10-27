@@ -1,5 +1,0 @@
-#!/bin/bash
-
-gcc $1 -o bin/$2 -Wall -std=c99 -Wno-missing-braces -I include/ -L lib/ -lraylib -lm
-
-echo -e "\e[32mCompiled to bin/$2\e[0m"

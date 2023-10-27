@@ -1,0 +1,19 @@
+#!/bin/bash
+
+src="./src/main.c"
+target="./bin/catch-the-fish"
+
+if [[ $# -gt 0 ]]; then
+    if [[ $1 == "clean" ]]; then
+        rm -rf ./bin/*
+    elif [[ $1 == "run" ]]; then
+        gcc $src -o $target -Wall -std=c99 -Wno-missing-braces -I include/ -L lib/ -lraylib -lm
+        $target
+    else
+        echo "Invalid command!"
+    fi
+
+else
+    gcc $src -o $target -Wall -std=c99 -Wno-missing-braces -I include/ -L lib/ -lraylib -lm
+    echo -e "\e[32mCompiled to bin/$2\e[0m"
+fi

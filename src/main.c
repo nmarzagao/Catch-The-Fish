@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "include/raylib.h"
+#include "../include/raylib.h"
 
 /* 
 TODO: 
