@@ -1,5 +1,12 @@
 #include <stdlib.h>
 #include "../include/raylib.h"
+#include "../include/player.h"
+#include "../include/fish.h"
+// #include "../include/game.h"
+
+#define SCREEN_WIDTH  800
+#define SCREEN_HEIGHT 480
+
 
 /* 
 TODO: 
@@ -9,27 +16,12 @@ TODO:
     Fixup github
 */
 
-int game_menu();
-int game_start();
-int game_over(unsigned int score);
-void player_controller(const float speed, Rectangle* player_box);
+void game_menu();
+void game_start();
+void game_over(unsigned int score);
 
 
-typedef struct {
-    Rectangle box;
-    unsigned int speed;
-    Texture2D texture[4];
-}
-Fish;
 
-typedef struct {
-    Rectangle box;
-    float speed;
-    unsigned long score;
-    Texture2D texture;
-
-}
-Player;
 
 typedef struct {
     int x;
@@ -37,27 +29,39 @@ typedef struct {
 }
 Snowflake;
 
-Player init_player();
-Fish init_fish();
+typedef enum {
+    MAIN_MENU,
+    PLAY,
+    GAME_OVER,
+    EXIT_GAME
+} 
+GameState;
 
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
 int main(void) {
-    // Initialization
-    const int screenWidth = 800;
-    const int screenHeight = 480;
 
-    InitWindow(screenWidth, screenHeight, "Catch The Fish");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Catch The Fish");
+    SetTargetFPS(60);    
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-
-    int game_state = game_menu();
-
-    while (game_state != 0) {
-        if (game_state == 1) {
-            game_state = game_start();
+    GameState current_game_state = MAIN_MENU;
+    int should_exit = 0;
+    int player_score = 0;
+    
+    while(!should_exit) {
+        switch(current_game_state) {
+            case MAIN_MENU:
+                current_game_state = game_menu();
+                break;
+            case PLAY:
+                current_game_state = game_start(&player_score);
+                break;
+            case GAME_OVER:
+                current_game_state = game_over(player_score)/
+                break;
+            case EXIT_GAME:
+                should_exit = 1;
+            default:
+                printf("ERROR: invalid state!\n");
+                exit(1);
         }
     }
     
@@ -67,7 +71,7 @@ int main(void) {
 }
 
 
-int game_menu() {
+void game_menu() {
     Color menu_color = {42, 88, 79, 1};
 
     Image menu_image = LoadImage("resources/menu.png"); 
@@ -75,8 +79,8 @@ int game_menu() {
     UnloadImage(menu_image);
 
     while(1) {
-        if (IsKeyDown( KEY_SPACE )) return 1;
-        if (IsKeyDown( KEY_Q )) return 0;
+        if (IsKeyDown( KEY_SPACE )) game_start();
+        if (IsKeyDown( KEY_Q )) return;
 
         BeginDrawing();
             ClearBackground(menu_color);
@@ -87,60 +91,23 @@ int game_menu() {
     }
 }
 
-Fish init_fish() {
-    Fish f;
 
-    f.box.x = GetRandomValue(5, GetScreenWidth() - 5);
-    f.box.y = -20;
-    f.box.width = 32;
-    f.box.height = 32;
 
-    f.speed = 1;
 
-    Image fish_image;
-    for (int i = 0; i < 4; i++) {
-        fish_image = LoadImage(TextFormat("resources/fish_%d.png", i + 1));
-        f.texture[i] = LoadTextureFromImage(fish_image);
-        UnloadImage(fish_image);
-    }
 
-    return f;
-}
-
-Player init_player() {
-    Player p;
-
-    p.box.x = GetScreenWidth() / 2.0f - 30;
-    p.box.y = GetScreenHeight() / 1.3f;
-    p.box.width = 64;
-    p.box.height = 64;
-
-    p.speed = 8.0;
-    p.score = 0;
-
-    Image player_image = LoadImage("resources/penguin_player.png"); 
-    p.texture = LoadTextureFromImage(player_image);
-    UnloadImage(player_image);
-
-    return p;
-}
-
-int game_start() {
+void game_start() {
 
     Image gound_image = LoadImage("resources/ground.png"); 
     Texture2D gound_texture = LoadTextureFromImage(gound_image);
     UnloadImage(gound_image);
 
-    Player player = init_player();
+    Player player = player_new();
 
-    Fish fish = init_fish();    
+    Fish fish = fish_new();    
 
-    bool collision = false;         // Collision detection 
+    bool collision = false;
 
-    Color menu_color = {42, 88, 79, 1}; 
-    Color ground_color = {110, 184, 168, 1};
-
-    int state = 0; 
+    Color menu_color = {42, 88, 79, 1};
 
     int type = GetRandomValue(0, 3);
 
@@ -158,29 +125,14 @@ int game_start() {
     while (1) {
 
         // Update
-        if (IsKeyDown( KEY_RIGHT )) player.box.x += player.speed;
-        else if (IsKeyDown( KEY_D )) player.box.x += player.speed;
-
-        if (IsKeyDown( KEY_LEFT )) player.box.x -= player.speed;
-        else if (IsKeyDown (KEY_A )) player.box.x -= player.speed;
-
-        // colisions
-        if ((player.box.x + player.box.width) >= GetScreenWidth()) player.box.x = GetScreenWidth() - player.box.width;
-        else if (player.box.x <= 0) player.box.x = 0;
+        player_controller(&player);
+        player_screen_colisions(&player);
 
 
         fish.box.y += fish.speed; 
 
         if (fish.box.y >= (GetScreenHeight() / 1.3f) + 32) {
-            state = game_over(player.score);
-            if (state == 0) {
-                break;  // Exit the game loop and return to main menu
-            } else {
-                // Reset player, fish, and collision flag for a new game
-                player = init_player();
-                fish = init_fish();
-                collision = false;
-            }
+            game_over(player.score);
         }
 
         // snow
@@ -229,7 +181,7 @@ int game_start() {
     }
 }
 
-int game_over(unsigned int score) {
+void game_over(unsigned int score) {
     Image over_image = LoadImage("resources/over.png"); 
     Texture2D over_texture = LoadTextureFromImage(over_image);
     UnloadImage(over_image);
@@ -238,8 +190,8 @@ int game_over(unsigned int score) {
 
     while(1) {
 
-        if (IsKeyDown( KEY_SPACE )) return 1;
-        if (IsKeyDown( KEY_Q )) return 0;
+        if (IsKeyDown( KEY_SPACE )) game_start();
+        if (IsKeyDown( KEY_Q )) CloseWindow();
 
         BeginDrawing();
             ClearBackground(over_color);

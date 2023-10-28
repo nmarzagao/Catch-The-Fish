@@ -1,13 +1,14 @@
 #!/bin/bash
 
-src="./src/main.c"
+src="./src/main.c ./src/player.c ./src/fish.c"
+inc="./include/fish.h ./include/player.h"
 target="./bin/catch-the-fish"
 
 if [[ $# -gt 0 ]]; then
     if [[ $1 == "clean" ]]; then
         rm -rf ./bin/*
     elif [[ $1 == "run" ]]; then
-        gcc $src -o $target -Wall -std=c99 -Wno-missing-braces -I include/ -L lib/ -lraylib -lm
+        gcc $src $inc -o $target -Wall -std=c99 -Wno-missing-braces -I include/ -L lib/ -lraylib -lm
         $target
     else
         echo "Invalid command!"
