@@ -8,6 +8,7 @@ Fish fish_new() {
     f.box.width = 32;
     f.box.height = 32;
 
+    f.type = GetRandomValue(0, 3);
     f.speed = 1;
 
     Image fish_image;
@@ -18,4 +19,10 @@ Fish fish_new() {
     }
 
     return f;
+}
+
+void fish_movement(Fish* f) { f->box.y += f->speed; }
+
+bool fish_game_over_condition(Fish* f) { 
+    return (f->box.y >= (GetScreenHeight() / 1.3f) + 32); 
 }

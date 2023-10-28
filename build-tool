@@ -1,7 +1,8 @@
 #!/bin/bash
 
-src="./src/main.c ./src/player.c ./src/fish.c"
-inc="./include/fish.h ./include/player.h"
+src="./src/main.c ./src/player.c ./src/fish.c ./src/screen_assets.c ./src/game.c"
+inc="./include/fish.h ./include/player.h ./include/screen_assets.h ./include/game.h"
+
 target="./bin/catch-the-fish"
 
 if [[ $# -gt 0 ]]; then

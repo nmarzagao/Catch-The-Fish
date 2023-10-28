@@ -32,3 +32,21 @@ void player_screen_colisions(Player* player) {
     }
     else if (player->box.x <= 0) player->box.x = 0;
 }
+
+void player_point_colision(Player* player, Fish* fish) {
+    bool collision = CheckCollisionRecs(fish->box, player->box);
+
+    // player colision with fish
+    if (collision) {
+        player->score += 1;
+        fish->box.x = GetRandomValue(10, GetScreenWidth() - 10);
+        fish->box.y = -20;
+
+        // speed up logic
+        if (player->score % 3 == 0) {
+            if (fish->speed != 5) fish->speed += 1;
+        }
+
+        fish->type = GetRandomValue(0, 3);
+    }
+}
