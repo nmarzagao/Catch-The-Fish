@@ -1,8 +1,8 @@
 # Catch-The-Fish
 
-![](resources/thumbnail_menu.png)<br>
-![](resources/thumbnail_game_play.png)<br>
-![](resources/thumbnail_gameover.png)<br>
+![Menu Screen](thumbnail_menu.png)<br>
+![Gameplay](thumbnail_game_play.png)<br>
+![Game Over Screen](thumbnail_gameover.png)<br>
 
 A simple game about catching fish that are falling from the sky.
 
