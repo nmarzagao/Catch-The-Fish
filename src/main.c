@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "../include/raylib.h"
 #include "../include/player.h"
 #include "../include/fish.h"
@@ -16,13 +17,6 @@ TODO:
     Fixup github
 */
 
-void game_menu();
-void game_start();
-void game_over(unsigned int score);
-
-
-
-
 typedef struct {
     int x;
     int y;
@@ -37,6 +31,10 @@ typedef enum {
 } 
 GameState;
 
+GameState game_main_menu();
+GameState game_start(unsigned long* final_score);
+GameState game_over(unsigned long final_score);
+
 int main(void) {
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Catch The Fish");
@@ -44,21 +42,22 @@ int main(void) {
 
     GameState current_game_state = MAIN_MENU;
     int should_exit = 0;
-    int player_score = 0;
+    unsigned long player_final_score = 0;
     
     while(!should_exit) {
         switch(current_game_state) {
             case MAIN_MENU:
-                current_game_state = game_menu();
+                current_game_state = game_main_menu();
                 break;
             case PLAY:
-                current_game_state = game_start(&player_score);
+                current_game_state = game_start(&player_final_score);
                 break;
             case GAME_OVER:
-                current_game_state = game_over(player_score)/
+                current_game_state = game_over(player_final_score);
                 break;
             case EXIT_GAME:
                 should_exit = 1;
+                break;
             default:
                 printf("ERROR: invalid state!\n");
                 exit(1);
@@ -66,24 +65,28 @@ int main(void) {
     }
     
     CloseWindow();
-
     return 0;
 }
 
 
-void game_menu() {
-    Color menu_color = {42, 88, 79, 1};
+GameState game_main_menu() {
+    // INIT
+    // Background Color
+    const Color menu_background_color = {42, 88, 79, 1};
 
+    // Load Main Menu Img
     Image menu_image = LoadImage("resources/menu.png"); 
     Texture2D menu_texture = LoadTextureFromImage(menu_image);
     UnloadImage(menu_image);
 
     while(1) {
-        if (IsKeyDown( KEY_SPACE )) game_start();
-        if (IsKeyDown( KEY_Q )) return;
+        // UPDATE
+        if (IsKeyDown( KEY_SPACE )) return PLAY;
+        if (IsKeyDown( KEY_Q )) return EXIT_GAME;
 
+        // DRAW
         BeginDrawing();
-            ClearBackground(menu_color);
+            ClearBackground(menu_background_color);
             DrawTexture(menu_texture, GetScreenWidth() / 4 -40, 0, WHITE);
             DrawText("Press Space To Start", GetScreenWidth() / 2 - 130, GetScreenHeight() / 2 + 160, 20, RAYWHITE);
             DrawText("Press Q To Quit", GetScreenWidth() / 2 - 100, GetScreenHeight() / 2 + 200, 20, RAYWHITE);
@@ -93,26 +96,26 @@ void game_menu() {
 
 
 
+GameState game_start(unsigned long* final_score) {
 
-
-void game_start() {
-
+    // INIT
+    // Load ground img
     Image gound_image = LoadImage("resources/ground.png"); 
     Texture2D gound_texture = LoadTextureFromImage(gound_image);
     UnloadImage(gound_image);
 
-    Player player = player_new();
+    // Initialize background color
+    const Color background_color = {42, 88, 79, 1};
 
+    // Initialize game structures
+    Player player = player_new();
     Fish fish = fish_new();    
 
-    bool collision = false;
 
-    Color menu_color = {42, 88, 79, 1};
-
-    int type = GetRandomValue(0, 3);
+    bool collision = false;    
+    int type = GetRandomValue(0, 3); // RANDOM FISH TYPE
 
     int qtd_sf = GetScreenHeight();
-
     Snowflake s[qtd_sf];
 
     for (int i = 0; i < qtd_sf; i++) {
@@ -123,8 +126,7 @@ void game_start() {
 
 
     while (1) {
-
-        // Update
+        // UPDATE
         player_controller(&player);
         player_screen_colisions(&player);
 
@@ -132,7 +134,8 @@ void game_start() {
         fish.box.y += fish.speed; 
 
         if (fish.box.y >= (GetScreenHeight() / 1.3f) + 32) {
-            game_over(player.score);
+            *final_score = player.score;
+            return GAME_OVER;
         }
 
         // snow
@@ -161,11 +164,11 @@ void game_start() {
         }
 
 
-        // Draw
+        // DRAW
        
         BeginDrawing();
 
-            ClearBackground(menu_color);
+            ClearBackground(background_color);
 
             DrawTexture(gound_texture, 1, (GetScreenHeight() / 1.3f) + 64, WHITE);
 
@@ -181,25 +184,26 @@ void game_start() {
     }
 }
 
-void game_over(unsigned int score) {
-    Image over_image = LoadImage("resources/over.png"); 
-    Texture2D over_texture = LoadTextureFromImage(over_image);
-    UnloadImage(over_image);
+GameState game_over(unsigned long final_score) {
+    // INIT
+    Image game_over_image = LoadImage("resources/over.png"); 
+    Texture2D game_over_texture = LoadTextureFromImage(game_over_image);
+    UnloadImage(game_over_image);
 
-    Color over_color = {47, 20, 47, 1};
+    const Color game_over_background_color = {47, 20, 47, 1};
 
     while(1) {
+        // UPDATE
+        if (IsKeyDown( KEY_SPACE )) return PLAY;
+        if (IsKeyDown( KEY_Q )) return EXIT_GAME;
 
-        if (IsKeyDown( KEY_SPACE )) game_start();
-        if (IsKeyDown( KEY_Q )) CloseWindow();
-
+        // DRAW
         BeginDrawing();
-            ClearBackground(over_color);
-            DrawTexture(over_texture, GetScreenWidth() / 4 -40, 0, WHITE);
-            DrawText(TextFormat("Your Score was: %d", score), GetScreenWidth() / 2 - 100, GetScreenHeight() / 2 + 40, 20, RAYWHITE);
+            ClearBackground(game_over_background_color);
+            DrawTexture(game_over_texture, GetScreenWidth() / 4 -40, 0, WHITE);
+            DrawText(TextFormat("Your Score was: %d", final_score), GetScreenWidth() / 2 - 100, GetScreenHeight() / 2 + 40, 20, RAYWHITE);
             DrawText("Press Space To Restart", GetScreenWidth() / 2 - 130, GetScreenHeight() / 2 + 120, 20, RAYWHITE);
             DrawText("Press Q To Quit", GetScreenWidth() / 2 - 90, GetScreenHeight() / 2 + 160, 20, RAYWHITE);
-
         EndDrawing();
     }
 }
