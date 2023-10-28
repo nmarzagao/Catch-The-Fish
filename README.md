@@ -1,6 +1,6 @@
 # Catch-The-Fish
 
-![](./resources/thumbnail_menu.png)<br>
+![](resources/thumbnail_menu.png)<br>
 ![](./resources/thumbnail_game_play.png)<br>
 ![](./resources/thumbnail_gameover.png)<br>
 
