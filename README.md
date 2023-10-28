@@ -1,14 +1,14 @@
 # Catch-The-Fish
 
 ![](resources/thumbnail_menu.png)<br>
-![](./resources/thumbnail_game_play.png)<br>
-![](./resources/thumbnail_gameover.png)<br>
+![](resources/thumbnail_game_play.png)<br>
+![](resources/thumbnail_gameover.png)<br>
 
 A simple game about catching fish that are falling from the sky.
 
-Check out its first implemantion over on [scratch]().
+Check out its first implemantion over on [scratch](https://scratch.mit.edu/projects/810107102/).
 
-Made with: [raylib]().
+Made with: [raylib](https://www.raylib.com/).
 
 ### Runing the game 
 
